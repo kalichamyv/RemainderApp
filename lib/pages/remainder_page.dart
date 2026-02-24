@@ -22,8 +22,8 @@ class HomePage extends StatelessWidget {
 
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (_) => const RegisterationPage ()),
-                    (route) => false,
+                MaterialPageRoute(builder: (_) => const LoginPage()),
+                (route) => false,
               );
             },
           ),
@@ -42,7 +42,6 @@ class HomePage extends StatelessWidget {
             Text("Email: ${user.email}"),
             Text("User ID: ${user.uid}"),
             Text("Created: ${user.metadata.creationTime}"),
-
           ],
         ),
       ),

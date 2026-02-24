@@ -1,29 +1,27 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:remainder/pages/registeration_page.dart';
+import 'package:remainder/pages/remainder_page.dart';
 import 'package:remainder/service/service_check.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class RegisterationPage extends StatefulWidget {
+  const RegisterationPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterationPage> createState() => _RegisterationPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  final UserNameController = TextEditingController();
+class _RegisterationPageState extends State<RegisterationPage> {
   final EmailController = TextEditingController();
   final PassWordController = TextEditingController();
-  final PhoneNumberController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final AuthService _authService = AuthService();
 
   @override
   void dispose() {
-    UserNameController.dispose();
     EmailController.dispose();
     PassWordController.dispose();
-    PhoneNumberController.dispose();
     super.dispose();
   }
 
@@ -38,126 +36,130 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: Colors.grey.shade100,
       body: Center(
         child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
           child: Form(
             key: _formKey,
-            child: Padding(
-              padding: EdgeInsetsGeometry.symmetric(
-                horizontal: 20,
-                vertical: 10,
-              ),
-              child: Column(
-                children: [
-                  Text('Create Account', style: TextStyle(fontSize: 35)),
-                  Text(
-                    'create a new account by filling the following details',
-                    style: TextStyle(fontSize: 20),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: UserNameController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      prefixIcon: Icon(Icons.person),
-                      hintText: 'User name',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(padding: EdgeInsets.only(left: 40, right: 20)),
+                Column(
+                  children: [
+                    Text("LOG in", style: TextStyle(fontSize: 35)),
+                    Text(
+                      'enter your gmail and password to securely access your account',
+                      style: TextStyle(fontSize: 20),
+                      textAlign: TextAlign.center,
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "user name is empty";
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: EmailController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: EmailController,
+                      decoration: InputDecoration(
+                        prefixIcon: Icon(Icons.email),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                        hintText: "E-Mail",
                       ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      prefixIcon: Icon(Icons.email),
-                      hintText: 'E-Mail',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'emails box is empty';
-                      }
-                      if (!value.contains('@gmail.com')) {
-                        return 'enter a valid mail';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: PassWordController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      prefixIcon: Icon(Icons.security_outlined),
-                      hintText: 'Password',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'password should not be empty';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: PhoneNumberController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      prefixIcon: Icon(Icons.dialer_sip),
-                      hintText: 'Phone No',
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        try {
-                          await _authService.register(
-                            username: UserNameController.text.trim(),
-                            email: EmailController.text.trim(),
-                            password: PassWordController.text.trim(),
-                            phoneno: PhoneNumberController.text.trim()
-                          );
-
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (_) => RegisterationPage()),
-                          );
-                        } on FirebaseAuthException catch (e) {
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(SnackBar(content: Text(e.message ?? 'Error')));
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Email should not be empty';
                         }
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
+                        if (!value.contains('@gmail.com')) {
+                          return 'Enter a valid email';
+                        }
+                        return null;
+                      },
                     ),
-                    child: const Text('Create Account'),
-                  ),
-                ],
-              ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: PassWordController,
+                      decoration: InputDecoration(
+                        prefixIcon: Icon(Icons.security_outlined),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        hintText: "Password ",
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'password should not be empty';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          try {
+                            await _authService.login(
+                              email: EmailController.text.trim(),
+                              password: PassWordController.text.trim(),
+                            );
+
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const HomePage(),
+                              ),
+                            );
+                          } on FirebaseAuthException catch (e) {
+                            String message = 'Login failed';
+
+                            if (e.code == 'user-not-found') {
+                              message = 'No user found for this email';
+                            } else if (e.code == 'wrong-password') {
+                              message = 'Incorrect password';
+                            } else if (e.code == 'invalid-email') {
+                              message = 'Invalid email address';
+                            }
+
+                            ScaffoldMessenger.of(
+                              context,
+                            ).showSnackBar(SnackBar(content: Text(message)));
+                          }
+                        }
+                      },
+                      child: Text('LOGIN'),
+                    ),
+                    Text.rich(
+                      TextSpan(
+                        text: "Don't you have Account ?",
+                        style: TextStyle(color: Colors.black),
+                        children: [
+                          TextSpan(
+                            text: "Sign up here ?",
+                            style: TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => RegisterationPage(),
+
+                                    ///registration
+                                  ),
+                                );
+                              },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),

@@ -25,7 +25,7 @@ class AuthCheck extends StatelessWidget {
           return const HomePage();
         }
 
-        return const RegisterationPage();
+        return const LoginPage();
 
         /// it moved to registration page
       },
