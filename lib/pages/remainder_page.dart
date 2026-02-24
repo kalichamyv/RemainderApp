@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:remainder/pages/login_page.dart';
+import 'package:remainder/pages/registeration_page.dart';
 import '../service/service_check.dart';
 
 class HomePage extends StatelessWidget {
@@ -22,7 +22,7 @@ class HomePage extends StatelessWidget {
 
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (_) => const LoginPage ()),
+                MaterialPageRoute(builder: (_) => const RegisterationPage ()),
                     (route) => false,
               );
             },

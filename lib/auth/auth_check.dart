@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:remainder/pages/registeration_page.dart';
 
-import '../pages/login_page.dart';
 import '../pages/remainder_page.dart';
 
 class AuthCheck extends StatelessWidget {
