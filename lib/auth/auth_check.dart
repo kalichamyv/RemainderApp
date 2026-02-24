@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:remainder/pages/registeration_page.dart';
 
-import '../pages/registeration_page.dart';
+import '../pages/login_page.dart';
 import '../pages/remainder_page.dart';
 
 class AuthCheck extends StatelessWidget {
@@ -10,7 +11,9 @@ class AuthCheck extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(), /// tell me when ever login or log out
+      stream: FirebaseAuth.instance.authStateChanges(),
+
+      /// tell me when ever login or log out
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
@@ -18,11 +21,14 @@ class AuthCheck extends StatelessWidget {
           );
         }
 
-        if (snapshot.hasData) {       /// if an existing user redirecting to homepage
+        if (snapshot.hasData) {
+          /// if an existing user redirecting to homepage
           return const HomePage();
         }
 
-        return const RegisterationPage();  /// it moved to registration page
+        return const RegisterationPage();
+
+        /// it moved to registration page
       },
     );
   }

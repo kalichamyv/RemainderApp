@@ -134,8 +134,10 @@ class _LoginPageState extends State<LoginPage> {
                       if (_formKey.currentState!.validate()) {
                         try {
                           await _authService.register(
+                            username: UserNameController.text.trim(),
                             email: EmailController.text.trim(),
                             password: PassWordController.text.trim(),
+                            phoneno: PhoneNumberController.text.trim()
                           );
 
                           Navigator.pushReplacement(

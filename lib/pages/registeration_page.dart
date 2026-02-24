@@ -99,34 +99,34 @@ class _RegisterationPageState extends State<RegisterationPage> {
                         backgroundColor: Colors.green,
                         foregroundColor: Colors.white,
                       ),
-                        onPressed: () async {
-                          if (_formKey.currentState!.validate()) {
-                            try {
-                              await _authService.login(
-                                email: EmailController.text.trim(),
-                                password: PassWordController.text.trim(),
-                              );
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(builder: (_) => HomePage()),
-                              );
-                            } on FirebaseAuthException catch (e) {
-                              String message = 'Login failed';
-                              if (e.code == 'user-not-found') {
-                                message = 'No user found for this email';
-                              } else if (e.code == 'wrong-password') {
-                                message = 'Incorrect password';
-                              } else if (e.code == 'invalid-email') {
-                                message = 'Invalid email address';
-                              }
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(content: Text(message)));
-                            } catch (e) {
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(content: Text(e.toString())));
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          try {
+                            await _authService.login(
+                              email: EmailController.text.trim(),
+                              password: PassWordController.text.trim(),
+                            );
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (_) => HomePage()),
+                            );
+                          } on FirebaseAuthException catch (e) {
+                            String message = 'Login failed';
+                            if (e.code == 'user-not-found') {
+                              message = 'No user found for this email';
+                            } else if (e.code == 'wrong-password') {
+                              message = 'Incorrect password';
+                            } else if (e.code == 'invalid-email') {
+                              message = 'Invalid email address';
                             }
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(SnackBar(content: Text(message)));
+                          } catch (e) {
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(SnackBar(content: Text(e.toString())));
                           }
-                        },
+                        }
+                      },
                       child: Text('LOGIN'),
                     ),
                     Text.rich(
