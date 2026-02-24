@@ -113,19 +113,22 @@ class _RegisterationPageState extends State<RegisterationPage> {
                               ),
                             );
                           } on FirebaseAuthException catch (e) {
-                            String message = 'Login failed';
+                            String message;
 
-                            if (e.code == 'user-not-found') {
-                              message = 'No user found for this email';
-                            } else if (e.code == 'wrong-password') {
-                              message = 'Incorrect password';
+                            if (e.code == 'invalid-credential') {
+                              message = 'Email or password is incorrect';
                             } else if (e.code == 'invalid-email') {
                               message = 'Invalid email address';
+                            } else {
+                              message = 'Login failed. Please try again';
                             }
 
-                            ScaffoldMessenger.of(
-                              context,
-                            ).showSnackBar(SnackBar(content: Text(message)));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(message),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
                           }
                         }
                       },
@@ -147,9 +150,7 @@ class _RegisterationPageState extends State<RegisterationPage> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => RegisterationPage(),
-
-                                    ///registration
+                                    builder: (context) => LoginPage(),
                                   ),
                                 );
                               },

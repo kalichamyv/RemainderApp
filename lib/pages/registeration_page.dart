@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:remainder/pages/login_page.dart';
 import 'package:remainder/service/service_check.dart';
 
 class LoginPage extends StatefulWidget {
@@ -141,7 +142,7 @@ class _LoginPageState extends State<LoginPage> {
 
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (_) => LoginPage()),
+                            MaterialPageRoute(builder: (_) => RegisterationPage()),
 
                             /// login page
                           );

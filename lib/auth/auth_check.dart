@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:remainder/pages/registeration_page.dart';
+import 'package:remainder/pages/login_page.dart';
 
 import '../pages/remainder_page.dart';
 
@@ -25,7 +25,7 @@ class AuthCheck extends StatelessWidget {
           return const HomePage();
         }
 
-        return const LoginPage();
+        return const RegisterationPage();
 
         /// it moved to registration page
       },
