@@ -11,6 +11,7 @@ void main() async {
       .collection('firestore_connection_test')
       .doc('test')
       .set({'ok': true});
+  print('fire base is called');
   runApp(MyApp());
 }
 

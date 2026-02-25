@@ -17,6 +17,7 @@ class _RegisterationPageState extends State<RegisterationPage> {
   final PassWordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final AuthService _authService = AuthService();
+  bool isLoading = false;
 
   @override
   void dispose() {
@@ -109,24 +110,23 @@ class _RegisterationPageState extends State<RegisterationPage> {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const HomePage(),
-                              ),
+                                  builder: (_) => const HomePage()),
                             );
-                          } on FirebaseAuthException catch (e) {
+                          }on FirebaseAuthException catch (e) {
                             String message;
 
-                            if (e.code == 'invalid-credential') {
-                              message = 'Email or password is incorrect';
-                            } else if (e.code == 'invalid-email') {
+                            if (e.code == 'invalid-email') {
                               message = 'Invalid email address';
-                            } else {
-                              message = 'Login failed. Please try again';
+                            }else if(e.code =='password') {
+                              message ='Invalid password';
+                            }else {
+                              message = 'Email or password is incorrect';
                             }
 
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(message),
-                                backgroundColor: Colors.red,
+                                backgroundColor: Colors.green,
                               ),
                             );
                           }
