@@ -1,8 +1,9 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:remainder/model/remainder.dart';
+import '../service/firestore_service.dart';
+import '../model/remainder.dart';
 
 class CreateTask extends StatefulWidget {
   const CreateTask({super.key});
@@ -14,24 +15,29 @@ class CreateTask extends StatefulWidget {
 class _CreateTaskState extends State<CreateTask> {
   final _formKey = GlobalKey<FormState>();
 
-  final tasknameController  = TextEditingController();
+  final tasknameController = TextEditingController();
   final dateController = TextEditingController();
   final descriptionController = TextEditingController();
   final phoneController = TextEditingController();
 
+  final FirestoreService firestoreService = FirestoreService();
+
   DateTime? selectedDate;
-  File? selectedFile; /// selected item variable name
+  File? selectedFile;
   String? selectedRepeat;
 
-  final List<String> repeatOptions = ['Today once', 'Weekly once', 'Monthly once'];
+  final List<String> repeatOptions = [
+    'Today once',
+    'Weekly once',
+    'Monthly once',
+  ];
 
   Future<void> pickImage() async {
     final picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-
     if (image != null) {
       setState(() {
-        selectedFile = File(image.path);  /// if the conditions is not true display the output
+        selectedFile = File(image.path);
       });
     }
   }
@@ -47,12 +53,9 @@ class _CreateTaskState extends State<CreateTask> {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser!;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Reminder'),
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-      ),
+      appBar: AppBar(title: const Text('Create Reminder')),
       body: Padding(
         padding: const EdgeInsets.all(12),
         child: Form(
@@ -63,18 +66,16 @@ class _CreateTaskState extends State<CreateTask> {
                 TextFormField(
                   controller: tasknameController,
                   decoration: _inputDecoration('TaskName', Icons.task),
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Name is required'
-                      : null,
+                  validator: (value) =>
+                  value == null || value.isEmpty ? 'Name is required' : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: dateController,
                   readOnly: true,
                   decoration: _inputDecoration('Date', Icons.calendar_today),
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Date is required'
-                      : null,
+                  validator: (value) =>
+                  value == null || value.isEmpty ? 'Date is required' : null,
                   onTap: () async {
                     final picked = await showDatePicker(
                       context: context,
@@ -82,58 +83,43 @@ class _CreateTaskState extends State<CreateTask> {
                       firstDate: DateTime(2000),
                       lastDate: DateTime(2100),
                     );
-
                     if (picked != null) {
                       setState(() {
                         selectedDate = picked;
                         dateController.text =
-                            '${picked.day}/${picked.month}/${picked.year}';
+                        '${picked.day}/${picked.month}/${picked.year}';
                       });
                     }
                   },
                 ),
-
                 const SizedBox(height: 12),
-
                 TextFormField(
                   controller: descriptionController,
                   maxLines: 5,
-                  decoration: _inputDecoration(
-                    'Description',
-                    Icons.description,
-                  ),
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Description is required'
-                      : null,
+                  decoration: _inputDecoration('Description', Icons.description),
+                  validator: (value) =>
+                  value == null || value.isEmpty ? 'Description is required' : null,
                 ),
-
                 const SizedBox(height: 12),
-
                 TextFormField(
                   controller: phoneController,
                   keyboardType: TextInputType.phone,
                   decoration: _inputDecoration('Phone Number', Icons.phone),
-                   validator: (value){
-                    if(value == null || value.isEmpty){
-                      return 'Enter the phone number';
-                    }if (value.length !=10){
-                      return 'Enter the valid phone 10 digit number';
-                    }
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Enter the phone number';
+                    if (value.length != 10) return 'Enter a valid 10-digit number';
                     return null;
-                }
+                  },
                 ),
                 const SizedBox(height: 12),
-
                 DropdownButtonFormField<String>(
                   value: selectedRepeat,
                   decoration: _inputDecoration('Repeat', Icons.arrow_drop_down),
                   items: repeatOptions
-                      .map(
-                        (option) => DropdownMenuItem(
-                          value: option,
-                          child: Text(option),
-                        ),
-                      )
+                      .map((option) => DropdownMenuItem(
+                    value: option,
+                    child: Text(option),
+                  ))
                       .toList(),
                   onChanged: (value) {
                     setState(() {
@@ -141,11 +127,9 @@ class _CreateTaskState extends State<CreateTask> {
                     });
                   },
                   validator: (value) =>
-                      value == null ? 'Please select repeat option' : null,
+                  value == null ? 'Please select repeat option' : null,
                 ),
-
                 const SizedBox(height: 12),
-
                 InkWell(
                   onTap: pickImage,
                   child: Container(
@@ -169,14 +153,11 @@ class _CreateTaskState extends State<CreateTask> {
                     ),
                   ),
                 ),
-
                 if (selectedFile != null) ...[
                   const SizedBox(height: 10),
                   Image.file(selectedFile!, height: 120),
                 ],
-
                 const SizedBox(height: 20),
-
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -188,9 +169,10 @@ class _CreateTaskState extends State<CreateTask> {
                         borderRadius: BorderRadius.circular(15),
                       ),
                     ),
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         final reminder = ReminderModel(
+                          userid: user.uid,
                           taskname: tasknameController.text,
                           description: descriptionController.text,
                           phoneNumber: phoneController.text,
@@ -198,14 +180,14 @@ class _CreateTaskState extends State<CreateTask> {
                           repeat: selectedRepeat!,
                           filePath: selectedFile?.path,
                         );
-
-                        Navigator.pop(context, reminder);
+                        await firestoreService.createRemainder(
+                          uid: user.uid,
+                          reminder: reminder,
+                        );
+                        Navigator.pop(context);
                       }
                     },
-                    child: const Text(
-                      'Create ',
-                      style: TextStyle(fontSize: 16),
-                    ),
+                    child: const Text('Create', style: TextStyle(fontSize: 16)),
                   ),
                 ),
               ],

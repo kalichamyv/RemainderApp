@@ -9,6 +9,25 @@
       "client_info": {
         "mobilesdk_app_id": "1:711437016724:android:37dcbaf68c3dc712b0de81",
         "android_client_info": {
+          "package_name": ""
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDtHtczHtF7oiASbNWqYTQ6hT247p_luAw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:711437016724:android:57224be32fd120a5b0de81",
+        "android_client_info": {
           "package_name": "com.remainder.app"
         }
       },

@@ -118,6 +118,7 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 20),
                   TextFormField(
                     controller: PhoneNumberController,
+                    keyboardType: TextInputType.numberWithOptions(),
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20),
@@ -127,6 +128,12 @@ class _LoginPageState extends State<LoginPage> {
                       prefixIcon: Icon(Icons.dialer_sip),
                       hintText: 'Phone No',
                     ),
+                    validator: (value){
+                      if(value! == 10){
+                        return "enter a valid phone number";
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:remainder/pages/create_task.dart';
-import 'package:remainder/model/remainder.dart';
+import '../model/remainder.dart';
+import '../service/firestore_service.dart';
+import 'create_task.dart';
 import 'login_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -13,99 +14,75 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final User user = FirebaseAuth.instance.currentUser!;
-  List<ReminderModel> reminders = [];
+  final FirestoreService firestoreService = FirestoreService();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Reminders'),
-        actions: [                        /// it is used to create a buttons or icons on right side of the screen
+        actions: [
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
-
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const RegisterationPage(),/// user gives the logout icon
-                ),
+                MaterialPageRoute(builder: (_) => const RegisterationPage()),
                     (route) => false,
               );
             },
           ),
         ],
       ),
-      body: reminders.isEmpty
-          ? const Center(
-        child: Text(
-          'no remainders yet found !!!',
-          style: TextStyle(fontSize: 18),
-        ),
-      )
-          : ListView.builder(
-        itemCount: reminders.length,
-        itemBuilder: (context, index) {
-          final reminder = reminders[index];
+      body: StreamBuilder<List<ReminderModel>>(
+        stream: firestoreService.getReminders(user.uid),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(
+                child: Text('No reminders found!', style: TextStyle(fontSize: 18)));
+          }
 
-          return Card(
-            margin: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 6,
-            ),
-            child: ListTile(
-              leading: const Icon(
-                Icons.notifications_active,
-                color: Colors.green,
-              ),
-              title: Text(reminder.taskname),
-              subtitle: Text(
-                '${reminder.repeat}'
-                    '${reminder.date.day}/${reminder.date.month}/${reminder.date.year}',
-              ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(icon: Icon(Icons.delete,color: Colors.red,),onPressed: () {
-                    setState(() {
-                      reminders.removeAt(index);
-                    });
-                  },),
-                  IconButton(icon: Icon(Icons.arrow_forward_ios),
-                    onPressed: () {
-                      print('view');
+          final reminders = snapshot.data!;
+          return ListView.builder(
+            itemCount: reminders.length,
+            itemBuilder: (context, index) {
+              final reminder = reminders[index];
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                child: ListTile(
+                  leading: const Icon(Icons.notifications_active, color: Colors.green),
+                  title: Text(reminder.taskname),
+                  subtitle: Text(
+                      '${reminder.repeat} - ${reminder.date.day}/${reminder.date.month}/${reminder.date.year}'),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () async {
+                      if (reminder.docId != null) {
+                        await firestoreService.deleteReminder(user.uid, reminder.docId!);
+                      }
                     },
                   ),
-                ],
-              )
-            ),
+                ),
+              );
+            },
           );
         },
       ),
-
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         child: const Icon(Icons.add),
-        shape: CircleBorder(),
         onPressed: () async {
-          final reminder = await Navigator.push(
+          await Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (_) => const CreateTask(),
-            ),
+            MaterialPageRoute(builder: (_) => const CreateTask()),
           );
-
-          if (reminder != null) {
-            setState(() {
-              reminders.add(reminder);
-            });
-          }
         },
       ),
-
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }
