@@ -21,7 +21,7 @@ class _CreateTaskState extends State<CreateTask> {
   final descriptionController = TextEditingController();
   final phoneController = TextEditingController();
 
-  final FirestoreService firestoreService = FirestoreService();
+  final FirestoreService firestoreService = FirestoreService(); /// storing the data in fire store
 
   DateTime? selectedDate;
   File? selectedFile;
@@ -33,9 +33,9 @@ class _CreateTaskState extends State<CreateTask> {
     'Monthly once',
   ];
 
-  Future<void> pickImage() async {
-    final picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+  Future<void> pickImage() async { /// USER MUST OPEN THE GALLERY AND SELECT THE IMAGE AND IT TAKES TIME
+    final picker = ImagePicker();  /// this is a flutter tool to pick the image
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery); /// the user might choose the or else not
     if (image != null) {
       setState(() {
         selectedFile = File(image.path);
@@ -64,19 +64,23 @@ class _CreateTaskState extends State<CreateTask> {
           child: SingleChildScrollView(
             child: Column(
               children: [
+
                 TextFormField(
                   controller: tasknameController,
                   decoration: _inputDecoration('TaskName', Icons.task),
-                  validator: (value) =>
-                  value == null || value.isEmpty ? 'Name is required' : null,
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Name is required'
+                      : null,
                 ),
                 const SizedBox(height: 12),
+
                 TextFormField(
                   controller: dateController,
                   readOnly: true,
                   decoration: _inputDecoration('Date', Icons.calendar_today),
-                  validator: (value) =>
-                  value == null || value.isEmpty ? 'Date is required' : null,
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Date is required'
+                      : null,
                   onTap: () async {
                     final picked = await showDatePicker(
                       context: context,
@@ -88,39 +92,50 @@ class _CreateTaskState extends State<CreateTask> {
                       setState(() {
                         selectedDate = picked;
                         dateController.text =
-                        '${picked.day}/${picked.month}/${picked.year}';
+                            '${picked.day}/${picked.month}/${picked.year}';
                       });
                     }
                   },
                 ),
                 const SizedBox(height: 12),
+
                 TextFormField(
                   controller: descriptionController,
                   maxLines: 5,
-                  decoration: _inputDecoration('Description', Icons.description),
-                  validator: (value) =>
-                  value == null || value.isEmpty ? 'Description is required' : null,
+                  decoration: _inputDecoration(
+                    'Description',
+                    Icons.description,
+                  ),
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Description is required'
+                      : null,
                 ),
                 const SizedBox(height: 12),
+
                 TextFormField(
                   controller: phoneController,
                   keyboardType: TextInputType.phone,
                   decoration: _inputDecoration('Phone Number', Icons.phone),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Enter the phone number';
-                    if (value.length != 10) return 'Enter a valid 10-digit number';
+                    if (value == null || value.isEmpty)
+                      return 'Enter the phone number';
+                    if (value.length != 10)
+                      return 'Enter a valid 10-digit number';
                     return null;
                   },
                 ),
                 const SizedBox(height: 12),
+
                 DropdownButtonFormField<String>(
                   value: selectedRepeat,
                   decoration: _inputDecoration('Repeat', Icons.arrow_drop_down),
                   items: repeatOptions
-                      .map((option) => DropdownMenuItem(
-                    value: option,
-                    child: Text(option),
-                  ))
+                      .map(
+                        (option) => DropdownMenuItem(
+                          value: option,
+                          child: Text(option),
+                        ),
+                      )
                       .toList(),
                   onChanged: (value) {
                     setState(() {
@@ -128,9 +143,10 @@ class _CreateTaskState extends State<CreateTask> {
                     });
                   },
                   validator: (value) =>
-                  value == null ? 'Please select repeat option' : null,
+                      value == null ? 'Please select repeat option' : null,
                 ),
                 const SizedBox(height: 12),
+
                 InkWell(
                   onTap: pickImage,
                   child: Container(
@@ -186,7 +202,7 @@ class _CreateTaskState extends State<CreateTask> {
                           reminder: reminder,
                         );
 
-                        await NotificationService.scheduleNotification(
+                        await NotificationService.scheduleNotification(  /// NOTIFICATION REMAINS THE USER AT THE ASSIGNED  TIME
                           id: reminder.date.millisecondsSinceEpoch ~/ 1000,
                           title: reminder.taskname,
                           body: 'Reminder',

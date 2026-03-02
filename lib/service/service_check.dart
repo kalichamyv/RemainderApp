@@ -22,7 +22,7 @@ class AuthService {
     await _firestore.collection('users').doc(uid).set({
       'username': username,
       'email': email,
-      'password':password,
+      'password': password,
       'phone': phoneno,
       'uid': uid,
       'createdAt': FieldValue.serverTimestamp(),
@@ -30,15 +30,13 @@ class AuthService {
   }
 
   // LOGIN
-  Future<void> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> login({required String email, required String password}) async {
     await FirebaseAuth.instance.signInWithEmailAndPassword(
       email: email,
       password: password,
     );
   }
+
   // LOGOUT
   Future<void> logout() async {
     await _auth.signOut();

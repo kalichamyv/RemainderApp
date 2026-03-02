@@ -128,8 +128,8 @@ class _LoginPageState extends State<LoginPage> {
                       prefixIcon: Icon(Icons.dialer_sip),
                       hintText: 'Phone No',
                     ),
-                    validator: (value){
-                      if(value! == 10){
+                    validator: (value) {
+                      if (value! == 10) {
                         return "enter a valid phone number";
                       }
                       return null;
@@ -138,9 +138,9 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        try {
-                          await _authService.register(
+                      if (_formKey.currentState!.validate()) { /// their should not be empty text
+                        try { /// wrong email,password ,firebase ,internet problem
+                          await _authService.register( /// new user created
                             username: UserNameController.text.trim(),
                             email: EmailController.text.trim(),
                             password: PassWordController.text.trim(),
@@ -149,7 +149,9 @@ class _LoginPageState extends State<LoginPage> {
 
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (_) => RegisterationPage()),
+                            MaterialPageRoute(
+                              builder: (_) => RegisterationPage(),
+                            ),
 
                             /// login page
                           );

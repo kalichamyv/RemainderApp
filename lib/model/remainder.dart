@@ -21,7 +21,7 @@ class ReminderModel {
     this.docId,
   });
 
-  // Convert model → Firestore
+  // Convert model to  Firestore which into keys and values
   Map<String, dynamic> toMap() {
     return {
       'userid': userid,
@@ -35,7 +35,7 @@ class ReminderModel {
     };
   }
 
-  // Convert Firestore doc → model
+  // Convert Firestore doc model which the firebase return the raw data
   factory ReminderModel.fromSnapshot(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return ReminderModel(

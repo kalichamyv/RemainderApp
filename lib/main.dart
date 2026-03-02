@@ -6,13 +6,14 @@ import 'package:remainder/service/notification_service.dart';
 import 'auth/auth_check.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  await FirebaseFirestore.instance
-      .collection('firestore_connection_test')
+  WidgetsFlutterBinding.ensureInitialized(); /// start the flutter
+  await Firebase.initializeApp(); /// connecting fire base
+  await FirebaseFirestore.instance  /// create a collection
+      .collection('firestore_connection_test') /// in firestore collection
       .doc('test')
-      .set({'ok': true});
+      .set({'ok': true}); /// store the document as test click ok as save
   await NotificationService.init();
+  await NotificationService.requestPermission();/// mobile notification permissions
   print('fire base is called');
   runApp(MyApp());
 }

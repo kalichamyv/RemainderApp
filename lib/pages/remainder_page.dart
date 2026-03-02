@@ -13,7 +13,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final User user = FirebaseAuth.instance.currentUser!;
+  final User user = FirebaseAuth.instance.currentUser!; /// IT CHECK THE CURRENT USER LOGIN
   final FirestoreService firestoreService = FirestoreService();
 
   @override
@@ -25,22 +25,19 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
-              await FirebaseAuth.instance.signOut();
+              await FirebaseAuth.instance.signOut(); /// LOGOUT FROM THE CURRENT ACCOUNT
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const RegisterationPage(),
-                ),
-                    (route) => false,
+                MaterialPageRoute(builder: (_) => const RegisterationPage()),
+                (route) => false, ///OPEN A NEW SCREEN AND REMOVE THE OLD SCREEN
               );
             },
           ),
         ],
       ),
-      body: StreamBuilder<List<ReminderModel>>(
+      body: StreamBuilder<List<ReminderModel>>( /// which is USED TO STORE FIREBASE DATA WITHOUT RELOAD AUTO UPDATE THE SCREEN
         stream: firestoreService.getReminders(user.uid),
         builder: (context, snapshot) {
-
           if (snapshot.hasError) {
             return Center(
               child: Text(
@@ -69,25 +66,23 @@ class _HomePageState extends State<HomePage> {
             itemBuilder: (context, index) {
               final reminder = reminders[index];
 
-              return Card(
+              return Card( /// WHICH CONSIST OF LEADING IN LEFT
                 margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 child: ListTile(
                   leading: const Icon(
                     Icons.notifications_active,
                     color: Colors.green,
                   ),
-                  title: Text(reminder.taskname),
+                  title: Text(reminder.taskname),/// TITLE AND SUBTITLE IN THE CENTER
                   subtitle: Text(
                     '${reminder.repeat} - '
-                        '${reminder.date.day}/${reminder.date.month}/${reminder.date.year}',
+                    '${reminder.date.day}/${reminder.date.month}/${reminder.date.year}',
                   ),
-                  trailing: IconButton(
+                  trailing: IconButton( /// RIGHT SIDE END
                     icon: const Icon(Icons.delete, color: Colors.red),
                     onPressed: () async {
                       if (reminder.docId != null) {
-                        await firestoreService.deleteReminder(
-                          reminder.docId!,
-                        );
+                        await firestoreService.deleteReminder(reminder.docId!);
                       }
                     },
                   ),

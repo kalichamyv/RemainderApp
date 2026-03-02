@@ -21,7 +21,7 @@ class _RegisterationPageState extends State<RegisterationPage> {
 
   @override
   void dispose() {
-    EmailController.dispose();
+    EmailController.dispose(); /// once the user enter the next page the text field will cleared automatically
     PassWordController.dispose();
     super.dispose();
   }
@@ -100,26 +100,27 @@ class _RegisterationPageState extends State<RegisterationPage> {
                         foregroundColor: Colors.white,
                       ),
                       onPressed: () async {
-                        if (_formKey.currentState!.validate()) {
-                          try {
-                            await _authService.login(
-                              email: EmailController.text.trim(),
+                        if (_formKey.currentState!.validate()) { /// there should not be empty field there
+                          try { /// wrong password, mail,internet,
+                            await _authService.login( /// check whether old  user
+                              email: EmailController.text.trim(),///REMOVE SPACES
                               password: PassWordController.text.trim(),
                             );
 
-                            Navigator.pushReplacement(
+                            Navigator.pushReplacement(///ENTER TO NEW PAGE FORM AN EXISTING PAGE
                               context,
                               MaterialPageRoute(
-                                  builder: (_) => const HomePage()),
+                                builder: (_) => const HomePage(),
+                              ),
                             );
-                          }on FirebaseAuthException catch (e) {
-                            String message;
+                          } on FirebaseAuthException catch (e) { /// IF FIREBASE THROWS AN ERROR CATCH THE ERROR AND
+                            String message;  /// CONVERT IT TO STRING
 
                             if (e.code == 'invalid-email') {
                               message = 'Invalid email address';
-                            }else if(e.code =='password') {
-                              message ='Invalid password';
-                            }else {
+                            } else if (e.code == 'password') {
+                              message = 'Invalid password';
+                            } else {
                               message = 'Email or password is incorrect';
                             }
 

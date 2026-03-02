@@ -27,7 +27,7 @@ class AuthCheck extends StatelessWidget {
 
         return const RegisterationPage();
 
-        /// it moved to registration page
+        /// else moved to registration page
       },
     );
   }
