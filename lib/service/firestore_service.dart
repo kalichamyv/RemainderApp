@@ -4,37 +4,28 @@ import '../model/remainder.dart';
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  // Save reminder for a user
   Future<void> createRemainder({
     required String uid,
     required ReminderModel reminder,
   }) async {
-    await _db
-        .collection('users')
-        .doc(uid)
-        .collection('reminders')
-        .add(reminder.toMap());
+    await _db.collection('reminders').add({
+      ...reminder.toMap(),
+      'userid': uid,
+    });
   }
 
-  // Fetch reminders for a user
   Stream<List<ReminderModel>> getReminders(String uid) {
     return _db
-        .collection('users')
-        .doc(uid)
         .collection('reminders')
+        .where('userid', isEqualTo: uid)
         .orderBy('date')
         .snapshots()
-        .map((snapshot) =>
-        snapshot.docs.map((doc) => ReminderModel.fromSnapshot(doc)).toList());
+        .map((snapshot) => snapshot.docs
+        .map((doc) => ReminderModel.fromSnapshot(doc))
+        .toList());
   }
 
-  // Delete reminder
-  Future<void> deleteReminder(String uid, String docId) async {
-    await _db
-        .collection('users')
-        .doc(uid)
-        .collection('reminders')
-        .doc(docId)
-        .delete();
+  Future<void> deleteReminder(String docId) async {
+    await _db.collection('reminders').doc(docId).delete();
   }
 }

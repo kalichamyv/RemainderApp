@@ -28,7 +28,9 @@ class _HomePageState extends State<HomePage> {
               await FirebaseAuth.instance.signOut();
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (_) => const RegisterationPage()),
+                MaterialPageRoute(
+                  builder: (_) => const RegisterationPage(),
+                ),
                     (route) => false,
               );
             },
@@ -38,12 +40,27 @@ class _HomePageState extends State<HomePage> {
       body: StreamBuilder<List<ReminderModel>>(
         stream: firestoreService.getReminders(user.uid),
         builder: (context, snapshot) {
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                snapshot.error.toString(),
+                style: const TextStyle(color: Colors.red),
+              ),
+            );
+          }
+
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
+
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(
-                child: Text('No reminders found!', style: TextStyle(fontSize: 18)));
+              child: Text(
+                'No reminders found!',
+                style: TextStyle(fontSize: 18),
+              ),
+            );
           }
 
           final reminders = snapshot.data!;
@@ -51,18 +68,26 @@ class _HomePageState extends State<HomePage> {
             itemCount: reminders.length,
             itemBuilder: (context, index) {
               final reminder = reminders[index];
+
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 child: ListTile(
-                  leading: const Icon(Icons.notifications_active, color: Colors.green),
+                  leading: const Icon(
+                    Icons.notifications_active,
+                    color: Colors.green,
+                  ),
                   title: Text(reminder.taskname),
                   subtitle: Text(
-                      '${reminder.repeat} - ${reminder.date.day}/${reminder.date.month}/${reminder.date.year}'),
+                    '${reminder.repeat} - '
+                        '${reminder.date.day}/${reminder.date.month}/${reminder.date.year}',
+                  ),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
                     onPressed: () async {
                       if (reminder.docId != null) {
-                        await firestoreService.deleteReminder(user.uid, reminder.docId!);
+                        await firestoreService.deleteReminder(
+                          reminder.docId!,
+                        );
                       }
                     },
                   ),
@@ -73,6 +98,7 @@ class _HomePageState extends State<HomePage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
+        shape: const CircleBorder(),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
         child: const Icon(Icons.add),

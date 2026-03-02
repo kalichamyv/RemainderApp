@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:remainder/service/notification_service.dart';
 
 import 'auth/auth_check.dart';
 
@@ -11,6 +12,7 @@ void main() async {
       .collection('firestore_connection_test')
       .doc('test')
       .set({'ok': true});
+  await NotificationService.init();
   print('fire base is called');
   runApp(MyApp());
 }

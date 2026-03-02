@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import '../service/firestore_service.dart';
 import '../model/remainder.dart';
+import '../service/notification_service.dart';
 
 class CreateTask extends StatefulWidget {
   const CreateTask({super.key});
@@ -180,9 +181,16 @@ class _CreateTaskState extends State<CreateTask> {
                           repeat: selectedRepeat!,
                           filePath: selectedFile?.path,
                         );
-                        await firestoreService.createRemainder(
+                        await FirestoreService().createRemainder(
                           uid: user.uid,
                           reminder: reminder,
+                        );
+
+                        await NotificationService.scheduleNotification(
+                          id: reminder.date.millisecondsSinceEpoch ~/ 1000,
+                          title: reminder.taskname,
+                          body: 'Reminder',
+                          dateTime: reminder.date,
                         );
                         Navigator.pop(context);
                       }
