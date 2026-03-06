@@ -7,14 +7,20 @@ import 'auth/auth_check.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); /// start the flutter
-  await Firebase.initializeApp(); /// connecting fire base
-  await FirebaseFirestore.instance  /// create a collection
-      .collection('firestore_connection_test') /// in firestore collection
+  await Firebase.initializeApp();/// connecting fire base
+  await FirebaseFirestore.instance
+      /// create a collection
+      .collection('firestore_connection_test')
+      /// in firestore collection
       .doc('test')
-      .set({'ok': true}); /// store the document as test click ok as save
+      .set({'ok': true});
+
+  /// store the document as test click ok as save
   await NotificationService.init();
-  await NotificationService.requestPermission();/// mobile notification permissions
-  print('fire base is called');
+  // print('Init is called');
+  await NotificationService.requestPermission();
+  /// mobile notification permissions
+  // print('fire base is called');
   runApp(MyApp());
 }
 

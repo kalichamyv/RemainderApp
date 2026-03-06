@@ -7,7 +7,9 @@ import '../model/remainder.dart';
 import '../service/notification_service.dart';
 
 class CreateTask extends StatefulWidget {
-  const CreateTask({super.key});
+  final ReminderModel? existingReminder;
+
+  const CreateTask({super.key, this.existingReminder});
 
   @override
   State<CreateTask> createState() => _CreateTaskState();
@@ -18,14 +20,19 @@ class _CreateTaskState extends State<CreateTask> {
 
   final tasknameController = TextEditingController();
   final dateController = TextEditingController();
+  final timeController = TextEditingController();
   final descriptionController = TextEditingController();
   final phoneController = TextEditingController();
 
-  final FirestoreService firestoreService = FirestoreService(); /// storing the data in fire store
+  final FirestoreService firestoreService = FirestoreService();
 
   DateTime? selectedDate;
+  TimeOfDay? selectedTime;
+  DateTime? combinedDateTime;
+
   File? selectedFile;
   String? selectedRepeat;
+  String? selectNotification;
 
   final List<String> repeatOptions = [
     'Today once',
@@ -33,9 +40,55 @@ class _CreateTaskState extends State<CreateTask> {
     'Monthly once',
   ];
 
-  Future<void> pickImage() async { /// USER MUST OPEN THE GALLERY AND SELECT THE IMAGE AND IT TAKES TIME
-    final picker = ImagePicker();  /// this is a flutter tool to pick the image
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery); /// the user might choose the or else not
+  final List<String> notificationOptions = [
+    'No Duration',
+    '15 Mins',
+    '30 Mins',
+    '45 Mins',
+    '1 Hour',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.existingReminder != null) {
+      final r = widget.existingReminder!;
+      tasknameController.text = r.taskname;
+      descriptionController.text = r.description;
+      phoneController.text = r.phoneNumber;
+      selectedRepeat = r.repeat;
+      selectNotification = r.notification;
+
+      selectedDate = r.date;
+      selectedTime = TimeOfDay(hour: r.date.hour, minute: r.date.minute);
+
+      dateController.text = '${r.date.day}/${r.date.month}/${r.date.year}';
+      timeController.text =
+          '${r.date.hour}:${r.date.minute.toString().padLeft(2, '0')}';
+
+      if (r.filePath != null) {
+        selectedFile = File(r.filePath!);
+      }
+    }
+  }
+
+  void combineDateTime() {
+    if (selectedDate != null && selectedTime != null) {
+      combinedDateTime = DateTime(
+        selectedDate!.year,
+        selectedDate!.month,
+        selectedDate!.day,
+        selectedTime!.hour,
+        selectedTime!.minute,
+      );
+    }
+  }
+
+  Future<void> pickImage() async {
+    final picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
     if (image != null) {
       setState(() {
         selectedFile = File(image.path);
@@ -47,6 +100,7 @@ class _CreateTaskState extends State<CreateTask> {
   void dispose() {
     tasknameController.dispose();
     dateController.dispose();
+    timeController.dispose();
     descriptionController.dispose();
     phoneController.dispose();
     super.dispose();
@@ -55,8 +109,13 @@ class _CreateTaskState extends State<CreateTask> {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser!;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Reminder')),
+      appBar: AppBar(
+        title: Text(
+          widget.existingReminder == null ? 'Create Reminder' : 'Edit Reminder',
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(12),
         child: Form(
@@ -64,44 +123,85 @@ class _CreateTaskState extends State<CreateTask> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-
+                /// Task Name
                 TextFormField(
                   controller: tasknameController,
-                  decoration: _inputDecoration('TaskName', Icons.task),
+                  decoration: _inputDecoration('Task Name', Icons.task),
                   validator: (value) => value == null || value.isEmpty
                       ? 'Name is required'
                       : null,
                 ),
                 const SizedBox(height: 12),
 
-                TextFormField(
-                  controller: dateController,
-                  readOnly: true,
-                  decoration: _inputDecoration('Date', Icons.calendar_today),
-                  validator: (value) => value == null || value.isEmpty
-                      ? 'Date is required'
-                      : null,
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime(2100),
-                    );
-                    if (picked != null) {
-                      setState(() {
-                        selectedDate = picked;
-                        dateController.text =
-                            '${picked.day}/${picked.month}/${picked.year}';
-                      });
-                    }
-                  },
+                /// Date & Time
+                Row(
+                  children: [
+                    /// Date
+                    Expanded(
+                      child: TextFormField(
+                        controller: dateController,
+                        readOnly: true,
+                        decoration: _inputDecoration(
+                          'Date',
+                          Icons.calendar_month,
+                        ),
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Date is required'
+                            : null,
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: selectedDate ?? DateTime.now(),
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime(2100),
+                          );
+
+                          if (picked != null) {
+                            setState(() {
+                              selectedDate = picked;
+                              dateController.text =
+                                  '${picked.day}/${picked.month}/${picked.year}';
+                            });
+                          }
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(width: 10),
+
+                    /// Time
+                    Expanded(
+                      child: TextFormField(
+                        controller: timeController,
+                        readOnly: true,
+                        decoration: _inputDecoration('Time', Icons.timelapse),
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Time is required'
+                            : null,
+                        onTap: () async {
+                          final picked = await showTimePicker(
+                            context: context,
+                            initialTime: selectedTime ?? TimeOfDay.now(),
+                          );
+
+                          if (picked != null) {
+                            setState(() {
+                              selectedTime = picked;
+                              timeController.text = picked.format(context);
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                  ],
                 ),
+
                 const SizedBox(height: 12),
 
+                /// Description
                 TextFormField(
                   controller: descriptionController,
-                  maxLines: 5,
+                  maxLines: 4,
                   decoration: _inputDecoration(
                     'Description',
                     Icons.description,
@@ -110,43 +210,66 @@ class _CreateTaskState extends State<CreateTask> {
                       ? 'Description is required'
                       : null,
                 ),
+
                 const SizedBox(height: 12),
 
+                /// Phone
                 TextFormField(
                   controller: phoneController,
                   keyboardType: TextInputType.phone,
-                  decoration: _inputDecoration('Phone Number', Icons.phone),
+                  decoration: _inputDecoration('Phone', Icons.phone),
                   validator: (value) {
-                    if (value == null || value.isEmpty)
-                      return 'Enter the phone number';
-                    if (value.length != 10)
-                      return 'Enter a valid 10-digit number';
+                    if (value == null || value.isEmpty) {
+                      return 'Enter phone number';
+                    }
+                    if (value.length != 10) {
+                      return 'Enter valid 10 digit number';
+                    }
                     return null;
                   },
                 ),
+
                 const SizedBox(height: 12),
 
+                /// Notification Dropdown
+                DropdownButtonFormField<String>(
+                  value: selectNotification,
+                  decoration: _inputDecoration(
+                    'Notification',
+                    Icons.notifications,
+                  ),
+                  items: notificationOptions
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectNotification = value;
+                    });
+                  },
+                  validator: (value) =>
+                      value == null ? 'Select notification' : null,
+                ),
+
+                const SizedBox(height: 12),
+
+                /// Repeat Dropdown
                 DropdownButtonFormField<String>(
                   value: selectedRepeat,
-                  decoration: _inputDecoration('Repeat', Icons.arrow_drop_down),
+                  decoration: _inputDecoration('Repeat', Icons.repeat),
                   items: repeatOptions
-                      .map(
-                        (option) => DropdownMenuItem(
-                          value: option,
-                          child: Text(option),
-                        ),
-                      )
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                       .toList(),
                   onChanged: (value) {
                     setState(() {
                       selectedRepeat = value;
                     });
                   },
-                  validator: (value) =>
-                      value == null ? 'Please select repeat option' : null,
+                  validator: (value) => value == null ? 'Select repeat' : null,
                 ),
+
                 const SizedBox(height: 12),
 
+                /// Image Upload
                 InkWell(
                   onTap: pickImage,
                   child: Container(
@@ -156,25 +279,25 @@ class _CreateTaskState extends State<CreateTask> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Row(
+                    child: const Row(
                       children: [
-                        const SizedBox(width: 15),
-                        const Icon(Icons.upload),
-                        const SizedBox(width: 10),
-                        Text(
-                          selectedFile == null
-                              ? 'Upload file or photo'
-                              : 'File selected',
-                        ),
+                        SizedBox(width: 15),
+                        Icon(Icons.upload),
+                        SizedBox(width: 10),
+                        Text('Upload file or photo'),
                       ],
                     ),
                   ),
                 ),
+
                 if (selectedFile != null) ...[
                   const SizedBox(height: 10),
                   Image.file(selectedFile!, height: 120),
                 ],
+
                 const SizedBox(height: 20),
+
+                /// Save Button
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -182,38 +305,84 @@ class _CreateTaskState extends State<CreateTask> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
                     ),
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
+                        combineDateTime();
+                        if (combinedDateTime == null) return;
+                        Duration reminderDuration = Duration.zero;
+                        if (selectNotification == "15 Mins") {
+                          reminderDuration = const Duration(minutes: 15);
+                        } else if (selectNotification == "30 Mins") {
+                          reminderDuration = const Duration(minutes: 30);
+                        } else if (selectNotification == "45 Mins") {
+                          reminderDuration = const Duration(minutes: 45);
+                        } else if (selectNotification == "1 Hour") {
+                          reminderDuration = const Duration(hours: 1);
+                        }
+                        DateTime notificationTime = combinedDateTime!.subtract(
+                          reminderDuration,
+                        );
+                        if (notificationTime.isBefore(DateTime.now())) {
+                          notificationTime = DateTime.now().add(
+                            const Duration(seconds: 10),
+                          );
+                        }
+                        final notificationId =
+                            DateTime.now().millisecondsSinceEpoch ~/ 1000;
                         final reminder = ReminderModel(
                           userid: user.uid,
                           taskname: tasknameController.text,
                           description: descriptionController.text,
                           phoneNumber: phoneController.text,
-                          date: selectedDate!,
+                          date: combinedDateTime!,
+                          time: combinedDateTime!,
                           repeat: selectedRepeat!,
+                          notification: selectNotification!,
                           filePath: selectedFile?.path,
+                          docId: widget.existingReminder?.docId,
                         );
-                        await FirestoreService().createRemainder(
-                          uid: user.uid,
-                          reminder: reminder,
-                        );
-
-                        await NotificationService.scheduleNotification(  /// NOTIFICATION REMAINS THE USER AT THE ASSIGNED  TIME
-                          id: reminder.date.millisecondsSinceEpoch ~/ 1000,
-                          title: reminder.taskname,
-                          body: 'Reminder',
-                          dateTime: reminder.date,
-                        );
+                        print("Combined Time: $combinedDateTime");
+                        print("Notification Time: $notificationTime");
+                        print("Repeat Type: ${reminder.repeat}");
+                        if (widget.existingReminder != null) {
+                          await firestoreService.updateReminder(reminder);
+                          await NotificationService.cancel(notificationId);
+                        } else {
+                          await firestoreService.createRemainder(
+                            uid: user.uid,
+                            reminder: reminder,
+                          );
+                        }
+                        if (reminder.repeat == "Today once") {
+                          await NotificationService.scheduleOnce(
+                            id: notificationId,
+                            title: reminder.taskname,
+                            body: reminder.description,
+                            dateTime: notificationTime,
+                          );
+                        } else if (reminder.repeat == "Weekly once") {
+                          await NotificationService.scheduleWeekly(
+                            id: notificationId,
+                            title: reminder.taskname,
+                            body: reminder.description,
+                            dateTime: notificationTime,
+                          );
+                        } else if (reminder.repeat == "Monthly once") {
+                          await NotificationService.scheduleMonthly(
+                            id: notificationId,
+                            title: reminder.taskname,
+                            body: reminder.description,
+                            dateTime: notificationTime,
+                          );
+                        }
                         Navigator.pop(context);
                       }
                     },
-                    child: const Text('Create', style: TextStyle(fontSize: 16)),
+                    child: const Text('Save'),
                   ),
                 ),
+                const SizedBox(height: 20),
               ],
             ),
           ),

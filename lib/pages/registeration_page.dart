@@ -138,9 +138,12 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () async {
-                      if (_formKey.currentState!.validate()) { /// their should not be empty text
-                        try { /// wrong email,password ,firebase ,internet problem
-                          await _authService.register( /// new user created
+                      if (_formKey.currentState!.validate()) {
+                        /// their should not be empty text
+                        try {
+                          /// wrong email,password ,firebase ,internet problem
+                          await _authService.register(
+                            /// new user created
                             username: UserNameController.text.trim(),
                             email: EmailController.text.trim(),
                             password: PassWordController.text.trim(),

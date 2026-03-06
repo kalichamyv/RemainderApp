@@ -13,7 +13,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final User user = FirebaseAuth.instance.currentUser!; /// IT CHECK THE CURRENT USER LOGIN
+  final User user = FirebaseAuth.instance.currentUser!;
   final FirestoreService firestoreService = FirestoreService();
 
   @override
@@ -25,17 +25,17 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
-              await FirebaseAuth.instance.signOut(); /// LOGOUT FROM THE CURRENT ACCOUNT
+              await FirebaseAuth.instance.signOut();
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const RegisterationPage()),
-                (route) => false, ///OPEN A NEW SCREEN AND REMOVE THE OLD SCREEN
+                    (route) => false,
               );
             },
           ),
         ],
       ),
-      body: StreamBuilder<List<ReminderModel>>( /// which is USED TO STORE FIREBASE DATA WITHOUT RELOAD AUTO UPDATE THE SCREEN
+      body: StreamBuilder<List<ReminderModel>>(
         stream: firestoreService.getReminders(user.uid),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
@@ -61,30 +61,111 @@ class _HomePageState extends State<HomePage> {
           }
 
           final reminders = snapshot.data!;
+
           return ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: reminders.length,
             itemBuilder: (context, index) {
               final reminder = reminders[index];
 
-              return Card( /// WHICH CONSIST OF LEADING IN LEFT
-                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              return Card(
+                margin:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 child: ListTile(
-                  leading: const Icon(
-                    Icons.notifications_active,
-                    color: Colors.green,
+                  leading: Icon(
+                    reminder.isCompleted == null
+                        ? Icons.notifications_active
+                        : reminder.isCompleted!
+                        ? Icons.check_circle
+                        : Icons.cancel,
+                    color: reminder.isCompleted == null
+                        ? Colors.orange
+                        : reminder.isCompleted!
+                        ? Colors.green
+                        : Colors.red,
                   ),
-                  title: Text(reminder.taskname),/// TITLE AND SUBTITLE IN THE CENTER
-                  subtitle: Text(
-                    '${reminder.repeat} - '
-                    '${reminder.date.day}/${reminder.date.month}/${reminder.date.year}',
+                  title: Text(
+                    reminder.taskname,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  trailing: IconButton( /// RIGHT SIDE END
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () async {
-                      if (reminder.docId != null) {
-                        await firestoreService.deleteReminder(reminder.docId!);
-                      }
-                    },
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      /// Date
+                      Text(
+                        '${reminder.repeat} - '
+                            '${reminder.date.day}/${reminder.date.month}/${reminder.date.year}',
+                      ),
+
+                      /// Status Text
+                      Text(
+                        reminder.isCompleted == null
+                            ? "Pending"
+                            : reminder.isCompleted!
+                            ? "Completed"
+                            : "Incomplete",
+                        style: TextStyle(
+                          color: reminder.isCompleted == null
+                              ? Colors.orange
+                              : reminder.isCompleted!
+                              ? Colors.green
+                              : Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+
+                      /// COMPLETE / INCOMPLETE BUTTONS ONLY IF PENDING
+                      if (reminder.isCompleted == null) ...[
+                        IconButton(
+                          icon: const Icon(Icons.check, color: Colors.green),
+                          onPressed: () async {
+                            if (reminder.docId != null) {
+                              await firestoreService.updateStatus(
+                                  reminder.docId!, true);
+                            }
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.red),
+                          onPressed: () async {
+                            if (reminder.docId != null) {
+                              await firestoreService.updateStatus(
+                                  reminder.docId!, false);
+                            }
+                          },
+                        ),
+                      ],
+
+                      /// EDIT
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.blue),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  CreateTask(existingReminder: reminder),
+                            ),
+                          );
+                        },
+                      ),
+
+                      /// DELETE
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () async {
+                          if (reminder.docId != null) {
+                            await firestoreService
+                                .deleteReminder(reminder.docId!);
+                          }
+                        },
+                      ),
+                    ],
                   ),
                 ),
               );

@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/remainder.dart';
 
-class FirestoreService { /// WHICH HELPS TO TALK TO THE FIRE BASE WHICH STORE THE TASK,GET THE TASK,DELETE
+class FirestoreService {
+  /// WHICH HELPS TO TALK TO THE FIRE BASE WHICH STORE THE TASK,GET THE TASK,DELETE
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   Future<void> createRemainder({
@@ -10,7 +11,6 @@ class FirestoreService { /// WHICH HELPS TO TALK TO THE FIRE BASE WHICH STORE TH
   }) async {
     await _db.collection('reminders').add({...reminder.toMap(), 'userid': uid});
   }
-
   Stream<List<ReminderModel>> getReminders(String uid) {
     return _db
         .collection('reminders')
@@ -26,5 +26,18 @@ class FirestoreService { /// WHICH HELPS TO TALK TO THE FIRE BASE WHICH STORE TH
 
   Future<void> deleteReminder(String docId) async {
     await _db.collection('reminders').doc(docId).delete();
+  }
+
+  Future<void> updateReminder(ReminderModel reminder) async {
+    if (reminder.docId == null) return;
+    await _db
+        .collection('reminders')
+        .doc(reminder.docId)
+        .update(reminder.toMap());
+  }
+  Future<void> updateStatus(String docId, bool status) async {
+    await _db.collection('reminders').doc(docId).update({
+      "isCompleted": status,
+    });
   }
 }

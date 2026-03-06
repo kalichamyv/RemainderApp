@@ -21,7 +21,9 @@ class _RegisterationPageState extends State<RegisterationPage> {
 
   @override
   void dispose() {
-    EmailController.dispose(); /// once the user enter the next page the text field will cleared automatically
+    EmailController.dispose();
+
+    /// once the user enter the next page the text field will cleared automatically
     PassWordController.dispose();
     super.dispose();
   }
@@ -100,21 +102,30 @@ class _RegisterationPageState extends State<RegisterationPage> {
                         foregroundColor: Colors.white,
                       ),
                       onPressed: () async {
-                        if (_formKey.currentState!.validate()) { /// there should not be empty field there
-                          try { /// wrong password, mail,internet,
-                            await _authService.login( /// check whether old  user
-                              email: EmailController.text.trim(),///REMOVE SPACES
+                        if (_formKey.currentState!.validate()) {
+                          /// there should not be empty field there
+                          try {
+                            /// wrong password, mail,internet,
+                            await _authService.login(
+                              /// check whether old  user
+                              email: EmailController.text.trim(),
+
+                              ///REMOVE SPACES
                               password: PassWordController.text.trim(),
                             );
 
-                            Navigator.pushReplacement(///ENTER TO NEW PAGE FORM AN EXISTING PAGE
+                            Navigator.pushReplacement(
+                              ///ENTER TO NEW PAGE FORM AN EXISTING PAGE
                               context,
                               MaterialPageRoute(
                                 builder: (_) => const HomePage(),
                               ),
                             );
-                          } on FirebaseAuthException catch (e) { /// IF FIREBASE THROWS AN ERROR CATCH THE ERROR AND
-                            String message;  /// CONVERT IT TO STRING
+                          } on FirebaseAuthException catch (e) {
+                            /// IF FIREBASE THROWS AN ERROR CATCH THE ERROR AND
+                            String message;
+
+                            /// CONVERT IT TO STRING
 
                             if (e.code == 'invalid-email') {
                               message = 'Invalid email address';
