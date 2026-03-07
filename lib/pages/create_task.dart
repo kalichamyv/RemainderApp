@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import '../service/firestore_service.dart';
 import '../model/remainder.dart';
 import '../service/notification_service.dart';
@@ -109,7 +110,6 @@ class _CreateTaskState extends State<CreateTask> {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser!;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -134,9 +134,9 @@ class _CreateTaskState extends State<CreateTask> {
                 const SizedBox(height: 12),
 
                 /// Date & Time
+                /// DATE
                 Row(
                   children: [
-                    /// Date
                     Expanded(
                       child: TextFormField(
                         controller: dateController,
@@ -159,8 +159,14 @@ class _CreateTaskState extends State<CreateTask> {
                           if (picked != null) {
                             setState(() {
                               selectedDate = picked;
-                              dateController.text =
-                                  '${picked.day}/${picked.month}/${picked.year}';
+
+                              dateController.text = DateFormat(
+                                'dd/MM/yyyy',
+                              ).format(picked);
+
+                              /// Reset time when date changes
+                              selectedTime = null;
+                              timeController.clear();
                             });
                           }
                         },
@@ -309,8 +315,12 @@ class _CreateTaskState extends State<CreateTask> {
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         combineDateTime();
+
                         if (combinedDateTime == null) return;
+
+                        /// Notification Duration
                         Duration reminderDuration = Duration.zero;
+
                         if (selectNotification == "15 Mins") {
                           reminderDuration = const Duration(minutes: 15);
                         } else if (selectNotification == "30 Mins") {
@@ -319,17 +329,46 @@ class _CreateTaskState extends State<CreateTask> {
                           reminderDuration = const Duration(minutes: 45);
                         } else if (selectNotification == "1 Hour") {
                           reminderDuration = const Duration(hours: 1);
+                        } else if (selectNotification == "No Duration") {
+                          reminderDuration = Duration.zero;
                         }
+
+                        /// Notification Time
                         DateTime notificationTime = combinedDateTime!.subtract(
                           reminderDuration,
                         );
-                        if (notificationTime.isBefore(DateTime.now())) {
-                          notificationTime = DateTime.now().add(
-                            const Duration(seconds: 10),
+
+                        DateTime now = DateTime.now();
+
+                        /// Prevent past notifications
+                        if (selectNotification != "No Duration" &&
+                            notificationTime.isBefore(now)) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Reminder time already passed. Please select another time.",
+                              ),
+                              backgroundColor: Colors.red,
+                            ),
                           );
+
+                          return;
                         }
+
+                        // /// Debug
+                        // print("Current Time: $now");
+                        // print("Task Time: $combinedDateTime");
+                        // print("Notification Time: $notificationTime");
+                        // print("Repeat Type: $selectedRepeat");
+
+                        /// Notification ID
                         final notificationId =
-                            DateTime.now().millisecondsSinceEpoch ~/ 1000;
+                            widget.existingReminder?.notificationId ??
+                            DateTime.now().millisecondsSinceEpoch.remainder(
+                              100000,
+                            );
+
+                        /// Reminder Model
                         final reminder = ReminderModel(
                           userid: user.uid,
                           taskname: tasknameController.text,
@@ -341,40 +380,48 @@ class _CreateTaskState extends State<CreateTask> {
                           notification: selectNotification!,
                           filePath: selectedFile?.path,
                           docId: widget.existingReminder?.docId,
+                          notificationId: notificationId,
                         );
-                        print("Combined Time: $combinedDateTime");
-                        print("Notification Time: $notificationTime");
-                        print("Repeat Type: ${reminder.repeat}");
+
+                        /// UPDATE REMINDER
                         if (widget.existingReminder != null) {
-                          await firestoreService.updateReminder(reminder);
+                          /// Cancel old notification
                           await NotificationService.cancel(notificationId);
+
+                          await firestoreService.updateReminder(reminder);
                         } else {
+                          /// Create new reminder
                           await firestoreService.createRemainder(
                             uid: user.uid,
                             reminder: reminder,
                           );
                         }
-                        if (reminder.repeat == "Today once") {
-                          await NotificationService.scheduleOnce(
-                            id: notificationId,
-                            title: reminder.taskname,
-                            body: reminder.description,
-                            dateTime: notificationTime,
-                          );
-                        } else if (reminder.repeat == "Weekly once") {
-                          await NotificationService.scheduleWeekly(
-                            id: notificationId,
-                            title: reminder.taskname,
-                            body: reminder.description,
-                            dateTime: notificationTime,
-                          );
-                        } else if (reminder.repeat == "Monthly once") {
-                          await NotificationService.scheduleMonthly(
-                            id: notificationId,
-                            title: reminder.taskname,
-                            body: reminder.description,
-                            dateTime: notificationTime,
-                          );
+
+                        /// Schedule Notification
+                        if (selectNotification != "No Duration" ||
+                            selectNotification == "No Duration") {
+                          if (reminder.repeat == "Today once") {
+                            await NotificationService.scheduleOnce(
+                              id: notificationId,
+                              title: reminder.taskname,
+                              body: reminder.description,
+                              dateTime: notificationTime,
+                            );
+                          } else if (reminder.repeat == "Weekly once") {
+                            await NotificationService.scheduleWeekly(
+                              id: notificationId,
+                              title: reminder.taskname,
+                              body: reminder.description,
+                              dateTime: notificationTime,
+                            );
+                          } else if (reminder.repeat == "Monthly once") {
+                            await NotificationService.scheduleMonthly(
+                              id: notificationId,
+                              title: reminder.taskname,
+                              body: reminder.description,
+                              dateTime: notificationTime,
+                            );
+                          }
                         }
                         Navigator.pop(context);
                       }

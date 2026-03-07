@@ -20,11 +20,11 @@ class AuthService {
     String uid = userCredential.user!.uid;
 
     await _firestore.collection('users').doc(uid).set({
-      'username': username,
-      'email': email,
-      'password': password,
-      'phone': phoneno,
       'uid': uid,
+      'username': username,
+      'password': password,
+      'email': email,
+      'phone': phoneno,
       'createdAt': FieldValue.serverTimestamp(),
     });
   }

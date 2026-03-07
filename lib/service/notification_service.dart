@@ -21,12 +21,11 @@ class NotificationService {
 
     await _notifications.initialize(settings);
 
-    /// Notification channel
     const AndroidNotificationChannel channel =
     AndroidNotificationChannel(
       'reminder_channel',
       'Reminders',
-      description: 'Reminder notifications',
+      description: 'Reminder Notifications',
       importance: Importance.max,
     );
 
@@ -34,45 +33,70 @@ class NotificationService {
         .resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
+  }
 
-    /// Request Exact Alarm Permission (ANDROID 12+)
+  /// Permission
+  static Future<void> requestPermission() async {
+
+    await _notifications
+        .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestNotificationsPermission();
+
     await _notifications
         .resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>()
         ?.requestExactAlarmsPermission();
   }
 
-  /// Request Notification Permission (Android 13+)
-  static Future<void> requestPermission() async {
-    await _notifications
-        .resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationsPermission();
-  }
-
   /// Notification Details
   static NotificationDetails _details() {
-    return const NotificationDetails(
-      android: AndroidNotificationDetails(
-        'reminder_channel',
-        'Reminders',
-        importance: Importance.max,
-        priority: Priority.high,
-      ),
+
+    const AndroidNotificationDetails androidDetails =
+    AndroidNotificationDetails(
+      'reminder_channel',
+      'Reminders',
+      channelDescription: 'Reminder notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
     );
+
+    return const NotificationDetails(android: androidDetails);
   }
 
-  /// ONE TIME
+  /// Calculate Reminder Time
+  static DateTime getReminderTime(
+      DateTime taskTime,
+      String notificationOption,
+      ) {
+
+    switch (notificationOption) {
+
+      case "15 mins before":
+        return taskTime.subtract(const Duration(minutes: 15));
+
+      case "30 mins before":
+        return taskTime.subtract(const Duration(minutes: 30));
+
+      case "45 mins before":
+        return taskTime.subtract(const Duration(minutes: 45));
+
+      case "1 hr before":
+        return taskTime.subtract(const Duration(hours: 1));
+
+      default:
+        return taskTime;
+    }
+  }
+
+  /// TODAY ONCE
   static Future<void> scheduleOnce({
     required int id,
     required String title,
     required String body,
     required DateTime dateTime,
   }) async {
-
-    if (dateTime.isBefore(DateTime.now())) {
-      dateTime = DateTime.now().add(const Duration(seconds: 5));
-    }
 
     final tz.TZDateTime scheduled =
     tz.TZDateTime.from(dateTime, tz.local);
@@ -87,8 +111,6 @@ class NotificationService {
       uiLocalNotificationDateInterpretation:
       UILocalNotificationDateInterpretation.absoluteTime,
     );
-
-    print("Notification scheduled at: $scheduled");
   }
 
   /// WEEKLY
@@ -141,17 +163,14 @@ class NotificationService {
     );
   }
 
-  /// Cancel one
+  /// CANCEL ONE
   static Future<void> cancel(int id) async {
+    if (id <= 0) return;
     await _notifications.cancel(id);
   }
 
-  /// Cancel all
+  /// CANCEL ALL
   static Future<void> cancelAll() async {
     await _notifications.cancelAll();
-  }
-/// once user completed the task before time
-  static Future<void> cancelNotification(int id) async {
-    await _notifications.cancel(id);
   }
 }

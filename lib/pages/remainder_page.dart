@@ -93,8 +93,7 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       /// Date
                       Text(
-                        '${reminder.repeat} - '
-                            '${reminder.date.day}/${reminder.date.month}/${reminder.date.year}',
+                        '${reminder.repeat} - ''${reminder.date.day}/${reminder.date.month}/${reminder.date.year}',
                       ),
 
                       /// Status Text
@@ -115,55 +114,96 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ],
                   ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
 
-                      /// COMPLETE / INCOMPLETE BUTTONS ONLY IF PENDING
-                      if (reminder.isCompleted == null) ...[
-                        IconButton(
-                          icon: const Icon(Icons.check, color: Colors.green),
-                          onPressed: () async {
-                            if (reminder.docId != null) {
-                              await firestoreService.updateStatus(
-                                  reminder.docId!, true);
+                        /// COMPLETE / INCOMPLETE BUTTONS ONLY IF PENDING
+                        if (reminder.isCompleted == null) ...[
+                          IconButton(
+                            icon: const Icon(Icons.check, color: Colors.green),
+                            onPressed: () async {
+                              if (reminder.docId != null) {
+                                await firestoreService.updateStatus(
+                                    reminder.docId!, true);
+                              }
+                            },
+                          ),
+
+                          IconButton(
+                            icon: const Icon(Icons.close, color: Colors.red),
+                            onPressed: () async {
+                              if (reminder.docId != null) {
+                                await firestoreService.updateStatus(
+                                    reminder.docId!, false);
+                              }
+                            },
+                          ),
+                        ],
+                      /// MENU BUTTON
+                      PopupMenuButton<String>(
+                        onSelected: (value) async {
+
+                          /// EDIT
+                          if (value == "edit") {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => CreateTask(existingReminder: reminder),
+                              ),
+                            );
+                          }
+
+                          /// DELETE
+                          if (value == "delete") {
+                            final confirm = await showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text("Delete Reminder"),
+                                  content: const Text(
+                                      "Are you sure you want to delete this reminder?"),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context, false);
+                                      },
+                                      child: const Text("Cancel"),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context, true);
+                                      },
+                                      child: const Text(
+                                        "Delete",
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+
+                            if (confirm == true && reminder.docId != null) {
+                              await firestoreService.deleteReminder(reminder.docId!);
                             }
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close, color: Colors.red),
-                          onPressed: () async {
-                            if (reminder.docId != null) {
-                              await firestoreService.updateStatus(
-                                  reminder.docId!, false);
-                            }
-                          },
-                        ),
-                      ],
-
-                      /// EDIT
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  CreateTask(existingReminder: reminder),
-                            ),
-                          );
-                        },
-                      ),
-
-                      /// DELETE
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () async {
-                          if (reminder.docId != null) {
-                            await firestoreService
-                                .deleteReminder(reminder.docId!);
                           }
                         },
+
+                        itemBuilder: (context) => [
+
+                          /// SHOW EDIT ONLY IF TASK NOT COMPLETED
+                          if (reminder.isCompleted != true)
+                            const PopupMenuItem(
+                              value: "edit",
+                              child: Text("Edit"),
+                            ),
+
+                          const PopupMenuItem(
+                            value: "delete",
+                            child: Text("Delete"),
+                          ),
+                        ],
                       ),
                     ],
                   ),

@@ -139,12 +139,14 @@ class _LoginPageState extends State<LoginPage> {
                   ElevatedButton(
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
-                        /// their should not be empty text
+                        /// there should not be empty TextFormField
                         try {
-                          /// wrong email,password ,firebase ,internet problem
+                          /// wrong email or existing,weak password,firebase ,internet problem
                           await _authService.register(
                             /// new user created
                             username: UserNameController.text.trim(),
+
+                            ///TRIM WHICH USED TO REMOVE SPACE AND TAB
                             email: EmailController.text.trim(),
                             password: PassWordController.text.trim(),
                             phoneno: PhoneNumberController.text.trim(),
@@ -161,6 +163,8 @@ class _LoginPageState extends State<LoginPage> {
                         } on FirebaseAuthException catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text(e.message ?? 'Error')),
+
+                            /// IT THROWS AN ERROR WHICH INVALID MAIL OR PASSWORD NETWORK PROBLEM ETC...
                           );
                         }
                       }

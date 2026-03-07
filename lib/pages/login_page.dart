@@ -22,21 +22,21 @@ class _RegisterationPageState extends State<RegisterationPage> {
   @override
   void dispose() {
     EmailController.dispose();
-
-    /// once the user enter the next page the text field will cleared automatically
     PassWordController.dispose();
+
+    /// once the user enter the next page the text field field will cleared automatically
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         backgroundColor: Colors.grey.shade100,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
       ),
-      backgroundColor: Colors.grey.shade100,
       body: Center(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
@@ -45,6 +45,7 @@ class _RegisterationPageState extends State<RegisterationPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Image.asset('assets/images/reminder_logo.png'),
                 Padding(padding: EdgeInsets.only(left: 40, right: 20)),
                 Column(
                   children: [
@@ -68,10 +69,10 @@ class _RegisterationPageState extends State<RegisterationPage> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Email should not be empty';
+                          return 'EMAIL SHOULD NOT BE EMPTY';
                         }
                         if (!value.contains('@gmail.com')) {
-                          return 'Enter a valid email';
+                          return 'ENTER A VALID EMAIL';
                         }
                         return null;
                       },
@@ -90,7 +91,7 @@ class _RegisterationPageState extends State<RegisterationPage> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'password should not be empty';
+                          return 'PASSWORD SHOULD NOT BE EMPTY';
                         }
                         return null;
                       },
