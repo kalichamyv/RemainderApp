@@ -11,7 +11,7 @@ class AuthCheck extends StatelessWidget {
   Widget build(BuildContext context) {
     /// AUTOMATICALLY REBUILD THE UI WHEN THE NEW VALUE IS ADDED
     return StreamBuilder<User?>(
-      /// IT SHOWS THE DATA OF THE PARTICULAR USER WHICH THE USER IS LOGIN CURRENTLY
+      /// IT SHOWS THE DATA OF THE PARTICULAR USER WHICH THE USER IS LOGIN CURRENTLY USER?
       stream: FirebaseAuth.instance.authStateChanges(),
 
       /// tell me when ever login or log out
@@ -31,7 +31,6 @@ class AuthCheck extends StatelessWidget {
         return const RegisterationPage();
 
         /// else moved to registration page
-        /// ELSE NOT USER MOVE TO REGISTER PAGE
       },
     );
   }

@@ -31,7 +31,7 @@ class _RegisterationPageState extends State<RegisterationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      //backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         backgroundColor: Colors.grey.shade100,
         elevation: 0,
@@ -55,13 +55,13 @@ class _RegisterationPageState extends State<RegisterationPage> {
                       style: TextStyle(fontSize: 20),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     TextFormField(
                       controller: EmailController,
                       decoration: InputDecoration(
                         prefixIcon: Icon(Icons.email),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         filled: true,
                         fillColor: Colors.white,
@@ -77,13 +77,13 @@ class _RegisterationPageState extends State<RegisterationPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     TextFormField(
                       controller: PassWordController,
                       decoration: InputDecoration(
                         prefixIcon: Icon(Icons.security_outlined),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         hintText: "Password ",
                         filled: true,
@@ -96,7 +96,7 @@ class _RegisterationPageState extends State<RegisterationPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
@@ -111,7 +111,7 @@ class _RegisterationPageState extends State<RegisterationPage> {
                               /// check whether old  user
                               email: EmailController.text.trim(),
 
-                              ///REMOVE SPACES
+                              ///REMOVE SPACES AND TAB
                               password: PassWordController.text.trim(),
                             );
 

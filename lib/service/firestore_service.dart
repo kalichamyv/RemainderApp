@@ -11,6 +11,7 @@ class FirestoreService {
   }) async {
     await _db.collection('reminders').add({...reminder.toMap(), 'userid': uid});
   }
+
   Stream<List<ReminderModel>> getReminders(String uid) {
     return _db
         .collection('reminders')
@@ -18,10 +19,11 @@ class FirestoreService {
         .orderBy('date')
         .snapshots()
         .map(
-          (snapshot) => snapshot.docs
+          (snapshot) =>
+          snapshot.docs
               .map((doc) => ReminderModel.fromSnapshot(doc))
               .toList(),
-        );
+    );
   }
 
   Future<void> deleteReminder(String docId) async {
@@ -35,6 +37,7 @@ class FirestoreService {
         .doc(reminder.docId)
         .update(reminder.toMap());
   }
+
   Future<void> updateStatus(String docId, bool status) async {
     await _db.collection('reminders').doc(docId).update({
       "isCompleted": status,

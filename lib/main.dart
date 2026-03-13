@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:remainder/service/notification_service.dart';
 
-import 'auth/auth_check.dart';
+import 'service/auth_check.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); /// start the flutter
-  await Firebase.initializeApp();/// connecting fire base
+  WidgetsFlutterBinding.ensureInitialized();
+
+  /// start the flutter
+  await Firebase.initializeApp();
+
+  /// connecting fire base
   await FirebaseFirestore.instance
       /// create a collection
       .collection('firestore_connection_test')
@@ -19,6 +23,7 @@ void main() async {
   await NotificationService.init();
   // print('Init is called');
   await NotificationService.requestPermission();
+
   /// mobile notification permissions
   // print('fire base is called');
   runApp(MyApp());
@@ -30,6 +35,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        scaffoldBackgroundColor: Colors.grey[100],
+        primaryColor: Colors.green,
+      ),
+
       debugShowCheckedModeBanner: false,
       title: 'Remainder',
       home: AuthCheck(),

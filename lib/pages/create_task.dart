@@ -1,16 +1,24 @@
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../service/firestore_service.dart';
 import '../model/remainder.dart';
 import '../service/notification_service.dart';
 
 class CreateTask extends StatefulWidget {
-  final ReminderModel? existingReminder;
 
-  const CreateTask({super.key, this.existingReminder});
+  final ReminderModel? existingReminder;
+  final bool isView;
+
+  const CreateTask({
+    super.key,
+    this.existingReminder,
+    this.isView = false,
+  });
 
   @override
   State<CreateTask> createState() => _CreateTaskState();
@@ -66,7 +74,7 @@ class _CreateTaskState extends State<CreateTask> {
 
       dateController.text = '${r.date.day}/${r.date.month}/${r.date.year}';
       timeController.text =
-          '${r.date.hour}:${r.date.minute.toString().padLeft(2, '0')}';
+      '${r.date.hour}:${r.date.minute.toString().padLeft(2, '0')}';
 
       if (r.filePath != null) {
         selectedFile = File(r.filePath!);
@@ -106,14 +114,43 @@ class _CreateTaskState extends State<CreateTask> {
     phoneController.dispose();
     super.dispose();
   }
+  Future<void> openDialer(String phoneNumber) async {
+    final Uri phoneUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber,
+    );
 
+    await launchUrl(phoneUri);
+  }
+  Future<void> openLink(String text) async {
+
+    final RegExp emailReg =
+    RegExp(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]+');
+
+    final RegExp urlReg =
+    RegExp(r'(https?:\/\/|www\.)[^\s]+');
+
+    if (emailReg.hasMatch(text)) {
+      final email = emailReg.firstMatch(text)!.group(0)!;
+      final Uri emailUri = Uri(scheme: 'mailto', path: email);
+      await launchUrl(emailUri);
+    }
+    else if (urlReg.hasMatch(text)) {
+      final url = urlReg.firstMatch(text)!.group(0)!;
+
+      final Uri uri = Uri.parse(
+          url.startsWith("http") ? url : "https://$url");
+
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser!;
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.existingReminder == null ? 'Create Reminder' : 'Edit Reminder',
+          widget.isView ? 'View Reminder':widget.existingReminder== null ?"create Remainder":"Edit Reminder"
         ),
       ),
       body: Padding(
@@ -127,6 +164,7 @@ class _CreateTaskState extends State<CreateTask> {
                 TextFormField(
                   controller: tasknameController,
                   decoration: _inputDecoration('Task Name', Icons.task),
+                  readOnly: widget.isView,
                   validator: (value) => value == null || value.isEmpty
                       ? 'Name is required'
                       : null,
@@ -148,7 +186,7 @@ class _CreateTaskState extends State<CreateTask> {
                         validator: (value) => value == null || value.isEmpty
                             ? 'Date is required'
                             : null,
-                        onTap: () async {
+                        onTap: widget.isView ? null :() async {
                           final picked = await showDatePicker(
                             context: context,
                             initialDate: selectedDate ?? DateTime.now(),
@@ -205,22 +243,71 @@ class _CreateTaskState extends State<CreateTask> {
                 const SizedBox(height: 12),
 
                 /// Description
-                TextFormField(
+                widget.isView
+                    ? GestureDetector(
+                  onTap: () {
+                    openLink(descriptionController.text);
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      descriptionController.text,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.blue,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                )
+                    : TextFormField(
                   controller: descriptionController,
                   maxLines: 4,
                   decoration: _inputDecoration(
                     'Description',
                     Icons.description,
                   ),
-                  validator: (value) => value == null || value.isEmpty
+                  validator: (value) =>
+                  value == null || value.isEmpty
                       ? 'Description is required'
                       : null,
                 ),
-
                 const SizedBox(height: 12),
 
                 /// Phone
-                TextFormField(
+                widget.isView
+                    ? InkWell(
+                  onTap: () {
+                    openDialer(phoneController.text);
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.phone,),
+                        const SizedBox(width: 10),
+                        Text(
+                          phoneController.text,
+                          style: const TextStyle(
+                            color: Colors.blue,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+                    : TextFormField(
                   controller: phoneController,
                   keyboardType: TextInputType.phone,
                   decoration: _inputDecoration('Phone', Icons.phone),
@@ -247,13 +334,13 @@ class _CreateTaskState extends State<CreateTask> {
                   items: notificationOptions
                       .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                       .toList(),
-                  onChanged: (value) {
+                  onChanged:widget.isView ? null: (value) {
                     setState(() {
                       selectNotification = value;
                     });
                   },
                   validator: (value) =>
-                      value == null ? 'Select notification' : null,
+                  value == null ? 'Select notification' : null,
                 ),
 
                 const SizedBox(height: 12),
@@ -265,7 +352,7 @@ class _CreateTaskState extends State<CreateTask> {
                   items: repeatOptions
                       .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                       .toList(),
-                  onChanged: (value) {
+                  onChanged:widget.isView ? null : (value) {
                     setState(() {
                       selectedRepeat = value;
                     });
@@ -277,7 +364,7 @@ class _CreateTaskState extends State<CreateTask> {
 
                 /// Image Upload
                 InkWell(
-                  onTap: pickImage,
+                  onTap:widget.isView ? null : pickImage,
                   child: Container(
                     height: 55,
                     width: double.infinity,
@@ -304,6 +391,7 @@ class _CreateTaskState extends State<CreateTask> {
                 const SizedBox(height: 20),
 
                 /// Save Button
+                if(!widget.isView)
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -348,7 +436,7 @@ class _CreateTaskState extends State<CreateTask> {
                               content: Text(
                                 "Reminder time already passed. Please select another time.",
                               ),
-                              backgroundColor: Colors.red,
+                              backgroundColor: Colors.green,
                             ),
                           );
 
@@ -364,9 +452,9 @@ class _CreateTaskState extends State<CreateTask> {
                         /// Notification ID
                         final notificationId =
                             widget.existingReminder?.notificationId ??
-                            DateTime.now().millisecondsSinceEpoch.remainder(
-                              100000,
-                            );
+                                DateTime.now().millisecondsSinceEpoch.remainder(
+                                  100000,
+                                );
 
                         /// Reminder Model
                         final reminder = ReminderModel(
@@ -398,8 +486,7 @@ class _CreateTaskState extends State<CreateTask> {
                         }
 
                         /// Schedule Notification
-                        if (selectNotification != "No Duration" ||
-                            selectNotification == "No Duration") {
+                        if (selectNotification != "No Duration") {
                           if (reminder.repeat == "Today once") {
                             await NotificationService.scheduleOnce(
                               id: notificationId,

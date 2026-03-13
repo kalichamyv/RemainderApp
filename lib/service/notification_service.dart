@@ -5,22 +5,22 @@ import 'package:timezone/timezone.dart' as tz;
 class NotificationService {
 
   static final FlutterLocalNotificationsPlugin _notifications =
-  FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();    /// FLUTTER LOCAL NOTIFICATION
 
-  /// INIT
+  /// MANAGE INITILISED THE APP NOTIFICATION ONCE THE STARTED
   static Future<void> init() async {
-
+/// IT SET THE TIME ZONE LIKE INDIAN TIME
     tz.initializeTimeZones();
     tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
-
+/// ADDING THE NOTIFICATION
     const AndroidInitializationSettings android =
     AndroidInitializationSettings('@mipmap/ic_launcher');
 
     const InitializationSettings settings =
     InitializationSettings(android: android);
-
+/// IT ACTIVATE NOTIFICATION SETTING
     await _notifications.initialize(settings);
-
+/// ANDROID PERMISSIONS
     const AndroidNotificationChannel channel =
     AndroidNotificationChannel(
       'reminder_channel',
@@ -35,7 +35,7 @@ class NotificationService {
         ?.createNotificationChannel(channel);
   }
 
-  /// Permission
+  ///ASK USER PERMISSION
   static Future<void> requestPermission() async {
 
     await _notifications
@@ -49,7 +49,7 @@ class NotificationService {
         ?.requestExactAlarmsPermission();
   }
 
-  /// Notification Details
+  /// NOTIFICATION DETAILS
   static NotificationDetails _details() {
 
     const AndroidNotificationDetails androidDetails =
@@ -65,13 +65,15 @@ class NotificationService {
     return const NotificationDetails(android: androidDetails);
   }
 
-  /// Calculate Reminder Time
+  /// CALCULATE REMINDER TIME
   static DateTime getReminderTime(
       DateTime taskTime,
       String notificationOption,
       ) {
 
     switch (notificationOption) {
+      case "no duration":
+        return taskTime;
 
       case "15 mins before":
         return taskTime.subtract(const Duration(minutes: 15));
@@ -163,7 +165,7 @@ class NotificationService {
     );
   }
 
-  /// CANCEL ONE
+  /// ONCE USER DELETE THE REMAINDER
   static Future<void> cancel(int id) async {
     if (id <= 0) return;
     await _notifications.cancel(id);

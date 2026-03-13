@@ -162,7 +162,10 @@ class _LoginPageState extends State<LoginPage> {
                           );
                         } on FirebaseAuthException catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(e.message ?? 'Error')),
+                            SnackBar(
+                              content: Text(e.message ?? 'Error'),
+                              backgroundColor: Colors.green,
+                            ),
 
                             /// IT THROWS AN ERROR WHICH INVALID MAIL OR PASSWORD NETWORK PROBLEM ETC...
                           );

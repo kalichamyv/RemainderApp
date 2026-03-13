@@ -10,12 +10,10 @@ class ReminderModel {
   DateTime date;
   DateTime time;
 
-  String notification; // 15 mins / 30 mins / 45 mins / 1 hr
-  String repeat; // Today once / Weekly once / Monthly once
-
+  String notification;
+  String repeat;
   bool? isCompleted;
 
-  /// extra fields used in your app
   String? filePath;
   int notificationId;
 
